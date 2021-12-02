@@ -1,7 +1,8 @@
-# Hello There!
+# RFID Copier
 
 ## Brief
-This repo provides a simple program which can modify the id of rfid-cards(the card need to be modifiable)
+A simple program which can modify the id of rfid-cards(the card need to be modifiable)
 
 ## Usage
-After all the connections are done and code is uploaded, firstly scan through the original card. Within 2 seconds, u will need to scan the modifiable card to done the copying process.
+1. Scan through the original card. The beeper will alarm if success. 
+2. Within 2 seconds, scan the modifiable rfid card.
