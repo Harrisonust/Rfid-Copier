@@ -125,6 +125,13 @@ void loop() {
     return;
   }
 
+  tone(tone_pin, DO_frequency);
+  delay(250);
+  noTone(tone_pin);
+  delay(100);
+  tone(tone_pin, DO_frequency);
+  delay(250);
+  noTone(tone_pin);
   // Dump the new memory contents
   //  Serial.println(F("New UID and contents:"));
   //  mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
