@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "port": "/dev/tty.usbmodem1401",
+    "sketch": "RFID_Copier.ino"
+}
