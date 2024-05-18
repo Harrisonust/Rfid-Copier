@@ -27,35 +27,41 @@
 #include <MFRC522.h>
 #include <MFRC522Hack.h>
 
-constexpr uint8_t RST_PIN = 9;     // Configurable, see typical pin layout above
-constexpr uint8_t SS_PIN = 10;     // Configurable, see typical pin layout above
+constexpr uint8_t RST_PIN = 9; // Configurable, see typical pin layout above
+constexpr uint8_t SS_PIN = 10; // Configurable, see typical pin layout above
 const int tone_pin = 3;
+const int LED_pin = 4;
 const int DO_frequency = 442;
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance.
-MFRC522Hack mfrc522Hack(&mfrc522);  // Create MFRC522Hack instance.
+MFRC522Hack mfrc522Hack(&mfrc522); // Create MFRC522Hack instance.
 
 /* Set your new UID here! */
-//byte newUid[] = {0x36, 0xE5, 0x5B, 0x6F};
+// byte newUid[] = {0x36, 0xE5, 0x5B, 0x6F};
 
 MFRC522::MIFARE_Key key;
 
 void setup() {
-  Serial.begin(9600);  // Initialize serial communications with the PC
-  while (!Serial);     // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
-  SPI.begin();         // Init SPI bus
-  mfrc522.PCD_Init();  // Init MFRC522 card
-  Serial.println(F("Warning: this example overwrites the UID of your UID changeable card, use with care!"));
+  Serial.begin(9600); // Initialize serial communications with the PC
+  while (!Serial)
+    ; // Do nothing if no serial port is opened (added for Arduinos based on
+      // ATMEGA32U4)
+  SPI.begin();        // Init SPI bus
+  mfrc522.PCD_Init(); // Init MFRC522 card
+  Serial.println(F("Warning: this example overwrites the UID of your UID "
+                   "changeable card, use with care!"));
 
-  // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
+  // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the
+  // factory.
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
   pinMode(tone_pin, OUTPUT);
+  pinMode(LED_pin, OUTPUT);
 }
 
 // Setting the UID can be as simple as this:
-//void loop() {
+// void loop() {
 //  byte newUid[] = {0x65, 0x2D, 0xFC, 0x3C};
 //  if ( mfrc522Hack.MIFARE_SetUid(newUid, (byte)4, true) ) {
 //    Serial.println("Wrote new UID to card.");
@@ -64,10 +70,17 @@ void setup() {
 //}
 
 // But of course this is a more proper approach
+unsigned long last_blink = 0;
+uint8_t led_status = 0;
 void loop() {
+  if(millis() - last_blink > 500) {
+    digitalWrite(LED_pin, led_status);
+    led_status = !led_status;
+    last_blink = millis();
+  }
 
   // Look for new cards, and select one if present
-  if ( ! mfrc522.PICC_IsNewCardPresent() || ! mfrc522.PICC_ReadCardSerial() ) {
+  if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) {
     delay(50);
     return;
   }
@@ -75,7 +88,7 @@ void loop() {
   // Now a card is selected. The UID and SAK is in mfrc522.uid.
 
   // Dump UID
-  Serial.print(F("Card UID:"));
+  Serial.print(F("Source Card UID:"));
   byte newUid[4] = {0, 0, 0, 0};
 
   for (byte i = 0; i < 4; i++) {
@@ -86,8 +99,6 @@ void loop() {
   delay(500);
   noTone(tone_pin);
   delay(3000);
-
-
 
   //  for (byte i = 0; i < mfrc522.uid.size; i++) {
   //    Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
@@ -110,18 +121,18 @@ void loop() {
   //  }
 
   // Set new UID
-  if ( mfrc522Hack.MIFARE_SetUid(newUid, (byte)4, true) ) {
-    Serial.println(F("Wrote new UID to card."));
+  if (mfrc522Hack.MIFARE_SetUid(newUid, (byte)4, true)) {
+    Serial.println(F("Copy UID to destination."));
   }
-  Serial.print("New card UID: ");
+  Serial.print("Destination Card UID: ");
   for (byte i = 0; i < 4; i++) {
     Serial.print(mfrc522.uid.uidByte[i], HEX);
-
   }
+  Serial.println();
 
   // Halt PICC and re-select it so DumpToSerial doesn't get confused
   mfrc522.PICC_HaltA();
-  if ( ! mfrc522.PICC_IsNewCardPresent() || ! mfrc522.PICC_ReadCardSerial() ) {
+  if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) {
     return;
   }
 
