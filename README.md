@@ -24,9 +24,10 @@ SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
 ```
 
 ## Usage
-1. Scan through the original card. The beeper will alarm if success. 
-2. Within 2 seconds, scan the modifiable RFID card.
-3. Note that the targeting card needs to be modifiable.
+1. Place the target card (the one to be copied from) on the scanner. A beep will sound once detected.
+2. Within 3 seconds, place the white card (the one to be copied to) on the scanner.
+   1. If the copy is successful, two beeps will sound.
+   2. If the copy fails, three beeps will sound.
 
 ## Datasheet 
 MFRC522: https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf

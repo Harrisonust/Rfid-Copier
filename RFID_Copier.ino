@@ -95,9 +95,7 @@ void loop() {
     Serial.print(mfrc522.uid.uidByte[i], HEX);
     newUid[i] = mfrc522.uid.uidByte[i];
   }
-  tone(tone_pin, DO_frequency);
-  delay(500);
-  noTone(tone_pin);
+  buzzer_start();
   delay(3000);
 
   //  for (byte i = 0; i < mfrc522.uid.size; i++) {
@@ -123,6 +121,11 @@ void loop() {
   // Set new UID
   if (mfrc522Hack.MIFARE_SetUid(newUid, (byte)4, true)) {
     Serial.println(F("Copy UID to destination."));
+  } else {
+    Serial.println("Failed to copy UID to destination");
+    buzzer_error();
+    delay(3000);
+    return;
   }
   Serial.print("Destination Card UID: ");
   for (byte i = 0; i < 4; i++) {
@@ -131,21 +134,52 @@ void loop() {
   Serial.println();
 
   // Halt PICC and re-select it so DumpToSerial doesn't get confused
-  mfrc522.PICC_HaltA();
-  if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) {
+  if(mfrc522.PICC_HaltA() != MFRC522::StatusCode::STATUS_OK) {
+    Serial.println("Failed to Halt");
+    buzzer_error();
+    delay(3000);
     return;
   }
 
-  tone(tone_pin, DO_frequency);
-  delay(250);
-  noTone(tone_pin);
-  delay(100);
-  tone(tone_pin, DO_frequency);
-  delay(250);
-  noTone(tone_pin);
+  if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) {
+    Serial.println("No new card is presented or unable to read card serial");
+    buzzer_error();
+    delay(3000);
+    return;
+  }
+
+  buzzer_pass();
   // Dump the new memory contents
   //  Serial.println(F("New UID and contents:"));
   //  mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
 
   delay(2000);
+}
+
+
+void buzzer_error(void) {
+  for(int i = 0; i < 3; i++) {
+    tone(tone_pin, DO_frequency);
+    delay(250);
+    noTone(tone_pin);
+    delay(100);
+  }
+}
+
+void buzzer_pass(void) {
+  for(int i = 0; i < 2; i++) {
+    tone(tone_pin, DO_frequency);
+    delay(250);
+    noTone(tone_pin);
+    delay(100);
+  }
+}
+
+void buzzer_start(void) {
+  for(int i = 0; i < 1; i++) {
+    tone(tone_pin, DO_frequency);
+    delay(250);
+    noTone(tone_pin);
+    delay(100);
+  }
 }
